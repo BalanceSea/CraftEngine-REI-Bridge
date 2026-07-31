@@ -5,9 +5,11 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.mountainseal.cereibridge.client.cache.CeBrewingRegistry;
+import net.mountainseal.cereibridge.client.cache.CeCookingRegistry;
 import net.mountainseal.cereibridge.client.cache.CeCraftingRegistry;
 import net.mountainseal.cereibridge.client.cache.CeItemRegistry;
 import net.mountainseal.cereibridge.client.cache.CeSmithingRegistry;
+import net.mountainseal.cereibridge.client.cache.CeStonecuttingRegistry;
 import net.mountainseal.cereibridge.client.net.BridgeChannels;
 import net.mountainseal.cereibridge.client.net.ChunkAssembler;
 import net.mountainseal.cereibridge.client.net.HelloPayload;
@@ -27,6 +29,11 @@ public final class CraftEngineReiBridgeClient implements ClientModInitializer {
     private static final CeCraftingRegistry CRAFTING = new CeCraftingRegistry();
     private static final CeSmithingRegistry SMITHING = new CeSmithingRegistry();
     private static final CeBrewingRegistry BREWING = new CeBrewingRegistry();
+    private static final CeCookingRegistry SMELTING = new CeCookingRegistry("smelting");
+    private static final CeCookingRegistry BLASTING = new CeCookingRegistry("blasting");
+    private static final CeCookingRegistry SMOKING = new CeCookingRegistry("smoking");
+    private static final CeCookingRegistry CAMPFIRE = new CeCookingRegistry("campfire");
+    private static final CeStonecuttingRegistry STONECUTTING = new CeStonecuttingRegistry();
 
     private static final int HELLO_MAX_ATTEMPTS = 200;
     private static boolean helloPending;
@@ -48,6 +55,26 @@ public final class CraftEngineReiBridgeClient implements ClientModInitializer {
         return BREWING;
     }
 
+    public static CeCookingRegistry smelting() {
+        return SMELTING;
+    }
+
+    public static CeCookingRegistry blasting() {
+        return BLASTING;
+    }
+
+    public static CeCookingRegistry smoking() {
+        return SMOKING;
+    }
+
+    public static CeCookingRegistry campfire() {
+        return CAMPFIRE;
+    }
+
+    public static CeStonecuttingRegistry stonecutting() {
+        return STONECUTTING;
+    }
+
     @Override
     public void onInitializeClient() {
         registerPayloadTypes();
@@ -56,6 +83,11 @@ public final class CraftEngineReiBridgeClient implements ClientModInitializer {
         ChunkAssembler craftingAssembler = new ChunkAssembler();
         ChunkAssembler smithingAssembler = new ChunkAssembler();
         ChunkAssembler brewingAssembler = new ChunkAssembler();
+        ChunkAssembler smeltingAssembler = new ChunkAssembler();
+        ChunkAssembler blastingAssembler = new ChunkAssembler();
+        ChunkAssembler smokingAssembler = new ChunkAssembler();
+        ChunkAssembler campfireAssembler = new ChunkAssembler();
+        ChunkAssembler stonecuttingAssembler = new ChunkAssembler();
 
         ClientPlayNetworking.registerGlobalReceiver(BridgeChannels.ITEMS, (payload, context) ->
                 itemAssembler.accept(payload).ifPresent(bytes -> context.client().execute(() -> {
@@ -101,6 +133,61 @@ public final class CraftEngineReiBridgeClient implements ClientModInitializer {
                     }
                 })));
 
+        ClientPlayNetworking.registerGlobalReceiver(BridgeChannels.SMELTING, (payload, context) ->
+                smeltingAssembler.accept(payload).ifPresent(bytes -> context.client().execute(() -> {
+                    try (DataInputStream input = stream(bytes)) {
+                        SMELTING.readFrom(input);
+                        CeReiPlugin.onSmeltingUpdated();
+                        LOGGER.info("Loaded {} CraftEngine smelting recipes", SMELTING.all().size());
+                    } catch (Exception exception) {
+                        LOGGER.warn("Failed to parse the CraftEngine smelting sync", exception);
+                    }
+                })));
+
+        ClientPlayNetworking.registerGlobalReceiver(BridgeChannels.BLASTING, (payload, context) ->
+                blastingAssembler.accept(payload).ifPresent(bytes -> context.client().execute(() -> {
+                    try (DataInputStream input = stream(bytes)) {
+                        BLASTING.readFrom(input);
+                        CeReiPlugin.onBlastingUpdated();
+                        LOGGER.info("Loaded {} CraftEngine blasting recipes", BLASTING.all().size());
+                    } catch (Exception exception) {
+                        LOGGER.warn("Failed to parse the CraftEngine blasting sync", exception);
+                    }
+                })));
+
+        ClientPlayNetworking.registerGlobalReceiver(BridgeChannels.SMOKING, (payload, context) ->
+                smokingAssembler.accept(payload).ifPresent(bytes -> context.client().execute(() -> {
+                    try (DataInputStream input = stream(bytes)) {
+                        SMOKING.readFrom(input);
+                        CeReiPlugin.onSmokingUpdated();
+                        LOGGER.info("Loaded {} CraftEngine smoking recipes", SMOKING.all().size());
+                    } catch (Exception exception) {
+                        LOGGER.warn("Failed to parse the CraftEngine smoking sync", exception);
+                    }
+                })));
+
+        ClientPlayNetworking.registerGlobalReceiver(BridgeChannels.CAMPFIRE, (payload, context) ->
+                campfireAssembler.accept(payload).ifPresent(bytes -> context.client().execute(() -> {
+                    try (DataInputStream input = stream(bytes)) {
+                        CAMPFIRE.readFrom(input);
+                        CeReiPlugin.onCampfireUpdated();
+                        LOGGER.info("Loaded {} CraftEngine campfire recipes", CAMPFIRE.all().size());
+                    } catch (Exception exception) {
+                        LOGGER.warn("Failed to parse the CraftEngine campfire sync", exception);
+                    }
+                })));
+
+        ClientPlayNetworking.registerGlobalReceiver(BridgeChannels.STONECUTTING, (payload, context) ->
+                stonecuttingAssembler.accept(payload).ifPresent(bytes -> context.client().execute(() -> {
+                    try (DataInputStream input = stream(bytes)) {
+                        STONECUTTING.readFrom(input);
+                        CeReiPlugin.onStonecuttingUpdated();
+                        LOGGER.info("Loaded {} CraftEngine stonecutting recipes", STONECUTTING.all().size());
+                    } catch (Exception exception) {
+                        LOGGER.warn("Failed to parse the CraftEngine stonecutting sync", exception);
+                    }
+                })));
+
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             helloPending = true;
             helloAttempts = 0;
@@ -111,6 +198,11 @@ public final class CraftEngineReiBridgeClient implements ClientModInitializer {
             craftingAssembler.reset();
             smithingAssembler.reset();
             brewingAssembler.reset();
+            smeltingAssembler.reset();
+            blastingAssembler.reset();
+            smokingAssembler.reset();
+            campfireAssembler.reset();
+            stonecuttingAssembler.reset();
             clearSyncedData();
         });
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -140,9 +232,19 @@ public final class CraftEngineReiBridgeClient implements ClientModInitializer {
         CRAFTING.clear();
         SMITHING.clear();
         BREWING.clear();
+        SMELTING.clear();
+        BLASTING.clear();
+        SMOKING.clear();
+        CAMPFIRE.clear();
+        STONECUTTING.clear();
         CeReiPlugin.onItemsUpdated();
         CeReiPlugin.onCraftingUpdated();
         CeReiPlugin.onSmithingUpdated();
         CeReiPlugin.onBrewingUpdated();
+        CeReiPlugin.onSmeltingUpdated();
+        CeReiPlugin.onBlastingUpdated();
+        CeReiPlugin.onSmokingUpdated();
+        CeReiPlugin.onCampfireUpdated();
+        CeReiPlugin.onStonecuttingUpdated();
     }
 }

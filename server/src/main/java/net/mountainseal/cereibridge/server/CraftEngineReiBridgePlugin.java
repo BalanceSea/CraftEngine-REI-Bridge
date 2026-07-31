@@ -37,6 +37,11 @@ public final class CraftEngineReiBridgePlugin extends JavaPlugin implements List
         getServer().getMessenger().registerOutgoingPluginChannel(this, BridgeChannels.CRAFTING);
         getServer().getMessenger().registerOutgoingPluginChannel(this, BridgeChannels.SMITHING);
         getServer().getMessenger().registerOutgoingPluginChannel(this, BridgeChannels.BREWING);
+        getServer().getMessenger().registerOutgoingPluginChannel(this, BridgeChannels.SMELTING);
+        getServer().getMessenger().registerOutgoingPluginChannel(this, BridgeChannels.BLASTING);
+        getServer().getMessenger().registerOutgoingPluginChannel(this, BridgeChannels.SMOKING);
+        getServer().getMessenger().registerOutgoingPluginChannel(this, BridgeChannels.CAMPFIRE);
+        getServer().getMessenger().registerOutgoingPluginChannel(this, BridgeChannels.STONECUTTING);
         getServer().getMessenger().registerIncomingPluginChannel(this, BridgeChannels.HELLO, this);
     }
 
@@ -68,5 +73,10 @@ public final class CraftEngineReiBridgePlugin extends JavaPlugin implements List
         BridgeChannels.send(this, player, BridgeChannels.CRAFTING, syncManager.craftingPayload());
         BridgeChannels.send(this, player, BridgeChannels.SMITHING, syncManager.smithingPayload());
         BridgeChannels.send(this, player, BridgeChannels.BREWING, syncManager.brewingPayload());
+        BridgeChannels.send(this, player, BridgeChannels.SMELTING, syncManager.smeltingPayload());
+        BridgeChannels.send(this, player, BridgeChannels.BLASTING, syncManager.blastingPayload());
+        BridgeChannels.send(this, player, BridgeChannels.SMOKING, syncManager.smokingPayload());
+        BridgeChannels.send(this, player, BridgeChannels.CAMPFIRE, syncManager.campfirePayload());
+        BridgeChannels.send(this, player, BridgeChannels.STONECUTTING, syncManager.stonecuttingPayload());
     }
 }

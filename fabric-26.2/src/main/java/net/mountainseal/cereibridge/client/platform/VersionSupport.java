@@ -64,6 +64,11 @@ public final class VersionSupport {
         PayloadTypeRegistry.clientboundPlay().register(BridgeChannels.CRAFTING, ChunkPayload.codecFor(BridgeChannels.CRAFTING));
         PayloadTypeRegistry.clientboundPlay().register(BridgeChannels.SMITHING, ChunkPayload.codecFor(BridgeChannels.SMITHING));
         PayloadTypeRegistry.clientboundPlay().register(BridgeChannels.BREWING, ChunkPayload.codecFor(BridgeChannels.BREWING));
+        PayloadTypeRegistry.clientboundPlay().register(BridgeChannels.SMELTING, ChunkPayload.codecFor(BridgeChannels.SMELTING));
+        PayloadTypeRegistry.clientboundPlay().register(BridgeChannels.BLASTING, ChunkPayload.codecFor(BridgeChannels.BLASTING));
+        PayloadTypeRegistry.clientboundPlay().register(BridgeChannels.SMOKING, ChunkPayload.codecFor(BridgeChannels.SMOKING));
+        PayloadTypeRegistry.clientboundPlay().register(BridgeChannels.CAMPFIRE, ChunkPayload.codecFor(BridgeChannels.CAMPFIRE));
+        PayloadTypeRegistry.clientboundPlay().register(BridgeChannels.STONECUTTING, ChunkPayload.codecFor(BridgeChannels.STONECUTTING));
         PayloadTypeRegistry.serverboundPlay().register(HelloPayload.TYPE, HelloPayload.CODEC);
     }
 }

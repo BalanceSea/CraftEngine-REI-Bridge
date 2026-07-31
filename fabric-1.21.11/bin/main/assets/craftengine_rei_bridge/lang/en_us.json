@@ -1,5 +1,12 @@
 {
   "category.craftengine_rei_bridge.crafting": "CraftEngine Crafting",
   "category.craftengine_rei_bridge.smithing": "CraftEngine Smithing",
-  "category.craftengine_rei_bridge.brewing": "CraftEngine Brewing"
+  "category.craftengine_rei_bridge.brewing": "CraftEngine Brewing",
+  "category.craftengine_rei_bridge.smelting": "CraftEngine Smelting",
+  "category.craftengine_rei_bridge.blasting": "CraftEngine Blasting",
+  "category.craftengine_rei_bridge.smoking": "CraftEngine Smoking",
+  "category.craftengine_rei_bridge.campfire": "CraftEngine Campfire",
+  "category.craftengine_rei_bridge.stonecutting": "CraftEngine Stonecutting",
+  "category.craftengine_rei_bridge.cooking.time_and_xp": "%s XP · %s s",
+  "category.craftengine_rei_bridge.cooking.time": "%s s"
 }

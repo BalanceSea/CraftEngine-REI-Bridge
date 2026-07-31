@@ -20,7 +20,7 @@
 
 CraftEngine REI Bridge 是由 **Paper 服务端插件**与 **Fabric 客户端模组**组成的双端桥接项目。
 
-服务端从 CraftEngine 读取已经加载的自定义物品与配方，将必要的展示数据安全分包发送给安装了配套模组的玩家；客户端收到数据后，把物品及合成、锻造、酿造配方注册到 Roughly Enough Items（REI）中。
+服务端从 CraftEngine 读取已经加载的自定义物品与配方，将必要的展示数据安全分包发送给安装了配套模组的玩家；客户端收到数据后，把物品及合成、锻造、酿造、熔炉、高炉、烟熏炉、营火和切石机配方注册到 Roughly Enough Items（REI）中。
 
 本项目只负责展示同步，不会修改 CraftEngine 的配方逻辑，也不会将 CraftEngine、REI、Fabric API 等依赖打包进产物。
 
@@ -34,11 +34,13 @@ flowchart LR
 ## 功能特性
 
 - 将服务端已加载的 CraftEngine 自定义物品加入 REI 物品列表。
-- 提供独立的 **CraftEngine 合成、锻造、酿造**分类。
+- 提供独立的 **CraftEngine 合成、锻造、酿造、熔炉、高炉、烟熏炉、营火、切石机**分类。
 - 支持有序合成、无序合成和精确的九宫格材料布局。
 - 支持锻造模板、基础物品、附加材料与结果展示。
+- 支持熔炉、高炉、烟熏炉和营火配方，显示处理时间，并在适用分类显示经验值。
+- 支持切石机输入与结果展示。
 - 保留物品的 `custom_model_data`、`item_model` 和自定义名称。
-- 同步其他 Bukkit 插件注册且涉及 CraftEngine 物品的合成、锻造配方。
+- 同步其他 Bukkit 插件注册且涉及 CraftEngine 物品的合成、锻造、烹饪和切石配方。
 - 以 `craftengine:id` 区分自定义物品和底层原版载体，避免查询时混入原版配方。
 - 在 REI 中按 `R` 或左键查询 CraftEngine 物品时，直接显示对应的 CraftEngine 配方分类。
 - CraftEngine 热重载后自动重建缓存，并向在线玩家推送最新数据。
@@ -91,7 +93,7 @@ flowchart LR
 | --- | --- |
 | `/cereibridge reload` | 重新读取 CraftEngine 数据并重建服务端同步缓存 |
 | `/cereibridge resync` | 玩家执行时重新同步自己；控制台执行时重新同步所有在线玩家 |
-| `/cereibridge info` | 查看物品、合成、锻造和酿造同步缓存的大小 |
+| `/cereibridge info` | 查看物品及八类配方同步缓存的大小 |
 
 管理权限：`craftengine-rei-bridge.admin`，默认仅服务器管理员拥有。
 
@@ -100,7 +102,7 @@ flowchart LR
 1. 服务端启动时读取 CraftEngine 物品及受支持的配方并生成缓存。
 2. 客户端加入服务器后通过桥接频道发起握手。
 3. 服务端仅向安装了配套客户端模组的玩家发送同步数据。
-4. 客户端组装分包，在 REI 中更新物品列表和三个 CraftEngine 分类。
+4. 客户端组装分包，在 REI 中更新物品列表和八个 CraftEngine 配方分类。
 5. CraftEngine 热重载时，服务端重新生成缓存并自动推送给在线玩家。
 
 桥接传输的是 REI 展示所需的数据，不会把完整 CraftEngine 配置、资源包文件或服务端插件代码发送给客户端。

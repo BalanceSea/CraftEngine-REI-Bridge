@@ -4,4 +4,5 @@
 server/libs/*.jar
 !server/libs/README.md
 MINEBBS.md
+CraftEngine-REI-Bridge.zip
 *.log

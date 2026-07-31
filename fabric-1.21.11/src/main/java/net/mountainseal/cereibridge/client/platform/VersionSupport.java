@@ -64,6 +64,11 @@ public final class VersionSupport {
         PayloadTypeRegistry.playS2C().register(BridgeChannels.CRAFTING, ChunkPayload.codecFor(BridgeChannels.CRAFTING));
         PayloadTypeRegistry.playS2C().register(BridgeChannels.SMITHING, ChunkPayload.codecFor(BridgeChannels.SMITHING));
         PayloadTypeRegistry.playS2C().register(BridgeChannels.BREWING, ChunkPayload.codecFor(BridgeChannels.BREWING));
+        PayloadTypeRegistry.playS2C().register(BridgeChannels.SMELTING, ChunkPayload.codecFor(BridgeChannels.SMELTING));
+        PayloadTypeRegistry.playS2C().register(BridgeChannels.BLASTING, ChunkPayload.codecFor(BridgeChannels.BLASTING));
+        PayloadTypeRegistry.playS2C().register(BridgeChannels.SMOKING, ChunkPayload.codecFor(BridgeChannels.SMOKING));
+        PayloadTypeRegistry.playS2C().register(BridgeChannels.CAMPFIRE, ChunkPayload.codecFor(BridgeChannels.CAMPFIRE));
+        PayloadTypeRegistry.playS2C().register(BridgeChannels.STONECUTTING, ChunkPayload.codecFor(BridgeChannels.STONECUTTING));
         PayloadTypeRegistry.playC2S().register(HelloPayload.TYPE, HelloPayload.CODEC);
     }
 }

@@ -1,5 +1,12 @@
 {
   "category.craftengine_rei_bridge.crafting": "CraftEngine 合成",
   "category.craftengine_rei_bridge.smithing": "CraftEngine 锻造",
-  "category.craftengine_rei_bridge.brewing": "CraftEngine 酿造"
+  "category.craftengine_rei_bridge.brewing": "CraftEngine 酿造",
+  "category.craftengine_rei_bridge.smelting": "CraftEngine 熔炉",
+  "category.craftengine_rei_bridge.blasting": "CraftEngine 高炉",
+  "category.craftengine_rei_bridge.smoking": "CraftEngine 烟熏炉",
+  "category.craftengine_rei_bridge.campfire": "CraftEngine 营火",
+  "category.craftengine_rei_bridge.stonecutting": "CraftEngine 切石机",
+  "category.craftengine_rei_bridge.cooking.time_and_xp": "经验 %s · %s 秒",
+  "category.craftengine_rei_bridge.cooking.time": "%s 秒"
 }

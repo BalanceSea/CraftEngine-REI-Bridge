@@ -10,10 +10,12 @@ import net.momirealms.craftengine.core.item.Item;
 import net.momirealms.craftengine.core.item.ItemBuildContext;
 import net.momirealms.craftengine.core.item.ItemDefinition;
 import net.momirealms.craftengine.core.item.recipe.CustomBrewingRecipe;
+import net.momirealms.craftengine.core.item.recipe.CustomCookingRecipe;
 import net.momirealms.craftengine.core.item.recipe.CustomCraftingTableRecipe;
 import net.momirealms.craftengine.core.item.recipe.CustomShapedRecipe;
 import net.momirealms.craftengine.core.item.recipe.CustomShapelessRecipe;
 import net.momirealms.craftengine.core.item.recipe.CustomSmithingTransformRecipe;
+import net.momirealms.craftengine.core.item.recipe.CustomStoneCuttingRecipe;
 import net.momirealms.craftengine.core.item.recipe.Ingredient;
 import net.momirealms.craftengine.core.item.recipe.Recipe;
 import net.momirealms.craftengine.core.item.recipe.RecipeType;
@@ -42,6 +44,11 @@ public final class SyncManager {
     private volatile byte[] craftingPayload = emptyPayload();
     private volatile byte[] smithingPayload = emptyPayload();
     private volatile byte[] brewingPayload = emptyPayload();
+    private volatile byte[] smeltingPayload = emptyPayload();
+    private volatile byte[] blastingPayload = emptyPayload();
+    private volatile byte[] smokingPayload = emptyPayload();
+    private volatile byte[] campfirePayload = emptyPayload();
+    private volatile byte[] stonecuttingPayload = emptyPayload();
 
     public SyncManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -63,18 +70,46 @@ public final class SyncManager {
         return brewingPayload;
     }
 
+    public byte[] smeltingPayload() {
+        return smeltingPayload;
+    }
+
+    public byte[] blastingPayload() {
+        return blastingPayload;
+    }
+
+    public byte[] smokingPayload() {
+        return smokingPayload;
+    }
+
+    public byte[] campfirePayload() {
+        return campfirePayload;
+    }
+
+    public byte[] stonecuttingPayload() {
+        return stonecuttingPayload;
+    }
+
     public void rebuild() {
         itemsPayload = buildItemsPayload();
         craftingPayload = buildCraftingPayload();
         smithingPayload = buildSmithingPayload();
         brewingPayload = buildBrewingPayload();
+        smeltingPayload = buildCookingPayload(RecipeType.SMELTING);
+        blastingPayload = buildCookingPayload(RecipeType.BLASTING);
+        smokingPayload = buildCookingPayload(RecipeType.SMOKING);
+        campfirePayload = buildCookingPayload(RecipeType.CAMPFIRE_COOKING);
+        stonecuttingPayload = buildStonecuttingPayload();
         plugin.getLogger().info(describe());
     }
 
     public String describe() {
         return "CraftEngine REI sync: items=" + itemsPayload.length + "B, crafting="
                 + craftingPayload.length + "B, smithing=" + smithingPayload.length
-                + "B, brewing=" + brewingPayload.length + "B";
+                + "B, brewing=" + brewingPayload.length + "B, smelting=" + smeltingPayload.length
+                + "B, blasting=" + blastingPayload.length + "B, smoking=" + smokingPayload.length
+                + "B, campfire=" + campfirePayload.length + "B, stonecutting="
+                + stonecuttingPayload.length + "B";
     }
 
     private byte[] buildItemsPayload() {
@@ -355,6 +390,176 @@ public final class SyncManager {
         String resultIdentity = identityOf(result);
         ItemStack converted = toClientBoundStack(result);
         writeItemAppearance(output, converted, resultIdentity);
+        return bytes.toByteArray();
+    }
+
+    private byte[] buildCookingPayload(RecipeType recipeType) {
+        List<byte[]> entries = new ArrayList<>();
+        Set<String> seenIds = new HashSet<>();
+        try {
+            for (Recipe recipe : BukkitRecipeManager.instance().recipesByType(recipeType)) {
+                try {
+                    byte[] entry = buildCraftEngineCookingEntry(recipe);
+                    if (entry != null) {
+                        entries.add(entry);
+                        seenIds.add(recipe.id().asString());
+                    }
+                } catch (Throwable throwable) {
+                    plugin.getLogger().log(Level.WARNING, "Failed to export CraftEngine "
+                            + recipeType.id() + " recipe '" + recipe.id() + "'", throwable);
+                }
+            }
+        } catch (Throwable throwable) {
+            plugin.getLogger().log(Level.WARNING,
+                    "Failed to read CraftEngine " + recipeType.id() + " recipes", throwable);
+        }
+
+        var iterator = plugin.getServer().recipeIterator();
+        while (iterator.hasNext()) {
+            org.bukkit.inventory.Recipe recipe = iterator.next();
+            if (!matchesBukkitCookingType(recipe, recipeType)) {
+                continue;
+            }
+            try {
+                byte[] entry = buildBukkitCookingEntry(recipe, seenIds);
+                if (entry != null) {
+                    entries.add(entry);
+                }
+            } catch (Throwable throwable) {
+                plugin.getLogger().log(Level.WARNING,
+                        "Failed to export a Bukkit " + recipeType.id() + " recipe", throwable);
+            }
+        }
+        return countPrefixed(entries);
+    }
+
+    private byte[] buildCraftEngineCookingEntry(Recipe recipe) throws IOException {
+        if (!(recipe instanceof CustomCookingRecipe cooking)) {
+            return null;
+        }
+        ItemStack ingredient = representativeStack(cooking.ingredient());
+        Item resultItem = cooking.result().buildItem(ItemBuildContext.empty());
+        if (isEmpty(ingredient) || resultItem == null
+                || !(resultItem.platformItem() instanceof ItemStack result) || isEmpty(result)) {
+            return null;
+        }
+        return cookingEntry(recipe.id().asString(), ingredient, result,
+                cooking.experience(), cooking.cookingTime());
+    }
+
+    private byte[] buildBukkitCookingEntry(org.bukkit.inventory.Recipe recipe, Set<String> seenIds)
+            throws IOException {
+        if (!(recipe instanceof org.bukkit.inventory.CookingRecipe<?> cooking)) {
+            return null;
+        }
+        String recipeId = cooking.getKey().toString();
+        if (seenIds.contains(recipeId)) {
+            return null;
+        }
+        ItemStack ingredient = firstChoice(cooking.getInputChoice());
+        ItemStack result = cooking.getResult();
+        if (isEmpty(ingredient) || isEmpty(result)
+                || !(isCraftEngineItem(ingredient) || isCraftEngineItem(result))) {
+            return null;
+        }
+        return cookingEntry(recipeId, ingredient, result, cooking.getExperience(), cooking.getCookingTime());
+    }
+
+    private static boolean matchesBukkitCookingType(org.bukkit.inventory.Recipe recipe, RecipeType recipeType) {
+        return switch (recipeType) {
+            case SMELTING -> recipe instanceof org.bukkit.inventory.FurnaceRecipe;
+            case BLASTING -> recipe instanceof org.bukkit.inventory.BlastingRecipe;
+            case SMOKING -> recipe instanceof org.bukkit.inventory.SmokingRecipe;
+            case CAMPFIRE_COOKING -> recipe instanceof org.bukkit.inventory.CampfireRecipe;
+            default -> false;
+        };
+    }
+
+    private static byte[] cookingEntry(String recipeId, ItemStack ingredient, ItemStack result,
+                                       float experience, int cookingTime) throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        DataOutputStream output = new DataOutputStream(bytes);
+        output.writeUTF(recipeId);
+        writeItemAppearance(output, toClientBoundStack(ingredient), identityOf(ingredient));
+        writeItemAppearance(output, toClientBoundStack(result), identityOf(result));
+        output.writeFloat(experience);
+        output.writeInt(cookingTime);
+        return bytes.toByteArray();
+    }
+
+    private byte[] buildStonecuttingPayload() {
+        List<byte[]> entries = new ArrayList<>();
+        Set<String> seenIds = new HashSet<>();
+        try {
+            for (Recipe recipe : BukkitRecipeManager.instance().recipesByType(RecipeType.STONECUTTING)) {
+                try {
+                    byte[] entry = buildCraftEngineStonecuttingEntry(recipe);
+                    if (entry != null) {
+                        entries.add(entry);
+                        seenIds.add(recipe.id().asString());
+                    }
+                } catch (Throwable throwable) {
+                    plugin.getLogger().log(Level.WARNING,
+                            "Failed to export CraftEngine stonecutting recipe '" + recipe.id() + "'", throwable);
+                }
+            }
+        } catch (Throwable throwable) {
+            plugin.getLogger().log(Level.WARNING, "Failed to read CraftEngine stonecutting recipes", throwable);
+        }
+
+        var iterator = plugin.getServer().recipeIterator();
+        while (iterator.hasNext()) {
+            org.bukkit.inventory.Recipe recipe = iterator.next();
+            try {
+                byte[] entry = buildBukkitStonecuttingEntry(recipe, seenIds);
+                if (entry != null) {
+                    entries.add(entry);
+                }
+            } catch (Throwable throwable) {
+                plugin.getLogger().log(Level.WARNING, "Failed to export a Bukkit stonecutting recipe", throwable);
+            }
+        }
+        return countPrefixed(entries);
+    }
+
+    private byte[] buildCraftEngineStonecuttingEntry(Recipe recipe) throws IOException {
+        if (!(recipe instanceof CustomStoneCuttingRecipe stonecutting)) {
+            return null;
+        }
+        ItemStack ingredient = representativeStack(stonecutting.ingredient());
+        Item resultItem = stonecutting.result().buildItem(ItemBuildContext.empty());
+        if (isEmpty(ingredient) || resultItem == null
+                || !(resultItem.platformItem() instanceof ItemStack result) || isEmpty(result)) {
+            return null;
+        }
+        return stonecuttingEntry(recipe.id().asString(), ingredient, result);
+    }
+
+    private byte[] buildBukkitStonecuttingEntry(org.bukkit.inventory.Recipe recipe, Set<String> seenIds)
+            throws IOException {
+        if (!(recipe instanceof org.bukkit.inventory.StonecuttingRecipe stonecutting)) {
+            return null;
+        }
+        String recipeId = stonecutting.getKey().toString();
+        if (seenIds.contains(recipeId)) {
+            return null;
+        }
+        ItemStack ingredient = firstChoice(stonecutting.getInputChoice());
+        ItemStack result = stonecutting.getResult();
+        if (isEmpty(ingredient) || isEmpty(result)
+                || !(isCraftEngineItem(ingredient) || isCraftEngineItem(result))) {
+            return null;
+        }
+        return stonecuttingEntry(recipeId, ingredient, result);
+    }
+
+    private static byte[] stonecuttingEntry(String recipeId, ItemStack ingredient, ItemStack result)
+            throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        DataOutputStream output = new DataOutputStream(bytes);
+        output.writeUTF(recipeId);
+        writeItemAppearance(output, toClientBoundStack(ingredient), identityOf(ingredient));
+        writeItemAppearance(output, toClientBoundStack(result), identityOf(result));
         return bytes.toByteArray();
     }
 

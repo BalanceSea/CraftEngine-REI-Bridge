@@ -8,6 +8,11 @@ public final class BridgeChannels {
     public static final CustomPacketPayload.Type<ChunkPayload> CRAFTING = type("crafting");
     public static final CustomPacketPayload.Type<ChunkPayload> SMITHING = type("smithing");
     public static final CustomPacketPayload.Type<ChunkPayload> BREWING = type("brewing");
+    public static final CustomPacketPayload.Type<ChunkPayload> SMELTING = type("smelting");
+    public static final CustomPacketPayload.Type<ChunkPayload> BLASTING = type("blasting");
+    public static final CustomPacketPayload.Type<ChunkPayload> SMOKING = type("smoking");
+    public static final CustomPacketPayload.Type<ChunkPayload> CAMPFIRE = type("campfire");
+    public static final CustomPacketPayload.Type<ChunkPayload> STONECUTTING = type("stonecutting");
 
     private BridgeChannels() {
     }

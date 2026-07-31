@@ -15,6 +15,11 @@ public final class BridgeChannels {
     public static final String CRAFTING = "ce_rei_bridge:crafting";
     public static final String SMITHING = "ce_rei_bridge:smithing";
     public static final String BREWING = "ce_rei_bridge:brewing";
+    public static final String SMELTING = "ce_rei_bridge:smelting";
+    public static final String BLASTING = "ce_rei_bridge:blasting";
+    public static final String SMOKING = "ce_rei_bridge:smoking";
+    public static final String CAMPFIRE = "ce_rei_bridge:campfire";
+    public static final String STONECUTTING = "ce_rei_bridge:stonecutting";
     public static final String HELLO = "ce_rei_bridge:hello";
 
     private static final int MAX_CHUNK_BYTES = 30_000;
