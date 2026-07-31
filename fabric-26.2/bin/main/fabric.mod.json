@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "CraftEngine REI Bridge",
+  "description": "Displays server-side CraftEngine items and recipes accurately in REI.",
+  "authors": [
+    "MoutainSeaL"
+  ],
+  "contact": {
+    "qq": "3643203568",
+    "qq_group": "342097496"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "net.mountainseal.cereibridge.client.CraftEngineReiBridgeClient"
+    ],
+    "rei_client": [
+      "net.mountainseal.cereibridge.client.rei.CeReiPlugin"
+    ],
+    "rei_common": [
+      "net.mountainseal.cereibridge.client.rei.CeReiCommonPlugin"
+    ]
+  },
+  "depends": {
+    "fabricloader": "${loader_dependency}",
+    "fabric-api": "*",
+    "roughlyenoughitems": "${rei_dependency}",
+    "minecraft": "${minecraft_dependency}",
+    "java": "${java_dependency}"
+  }
+}

@@ -1,0 +1,13 @@
+name: CraftEngineREIBridge
+version: '${version}'
+main: net.mountainseal.cereibridge.server.CraftEngineReiBridgePlugin
+description: Synchronizes CraftEngine items and recipes to the companion REI Fabric mod.
+api-version: '1.20'
+authors:
+  - MoutainSeaL
+website: https://qm.qq.com/q/342097496
+dependencies:
+  server:
+    CraftEngine:
+      load: BEFORE
+      required: true

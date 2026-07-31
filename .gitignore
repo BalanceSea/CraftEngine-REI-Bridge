@@ -3,4 +3,5 @@
 **/run/
 server/libs/*.jar
 !server/libs/README.md
+MINEBBS.md
 *.log
