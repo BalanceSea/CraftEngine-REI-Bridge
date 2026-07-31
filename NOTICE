@@ -1,0 +1,5 @@
+CraftEngine REI Bridge contains code derived from TH2403y/CE-JEI-Bridge,
+which is distributed under the MIT License.
+
+The REI integration, multi-version build, protocol identity correction and
+project-specific changes are maintained by MoutainSeaL.

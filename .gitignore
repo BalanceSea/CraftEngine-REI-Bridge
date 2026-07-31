@@ -1,0 +1,6 @@
+.gradle/
+**/build/
+**/run/
+server/libs/*.jar
+!server/libs/README.md
+*.log
